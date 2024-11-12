@@ -16,7 +16,7 @@ class Tokenizer:
             "t'": "te ",
         }
 
-    def tokenize(self, text: str) -> List[str]:
+    def __call__(self, text: str) -> List[str]:
         """
         Tokenizes French text into a list of tokens.
         """
