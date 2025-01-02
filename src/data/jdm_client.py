@@ -2,8 +2,6 @@ import functools
 from typing import Dict
 import requests
 
-from data.models import NodeType, RelationType
-
 
 class JdmApiClient:
     def __init__(self):
@@ -24,25 +22,26 @@ class JdmApiClient:
         return self.base_url + f'/{self.version}' + endpoint.format(**args)
     
     @functools.cache
-    def get_relation_types(self) -> Dict[int, RelationType]:
+    def get_relation_types(self) -> Dict[int, str]:
         endpoint = self.url(self.relations_types_endpoint)
         res = requests.get(endpoint)
         if res.status_code != 200:
             return {}
         res = res.json()
-        result : Dict[int, RelationType] = {d['id'] : RelationType.from_dict(d) for d in res}
+        result = {int(d['id']) : str(d['name']) for d in res}
         return result
     
     @functools.cache
-    def get_relation_types(self) -> Dict[int, NodeType]:
-        endpoint = self.url(self.nodes_types_endpoint)
+    def get_from_relations(self, word):
+        endpoint = self.url(self.get_relation_from_endpoint.format(node_name=word))
         res = requests.get(endpoint)
         if res.status_code != 200:
             return {}
         res = res.json()
-        result : Dict[int, NodeType] = {d['id'] : NodeType.from_dict(d) for d in res}
-        return result
-            
+        return res
+
+
+    
             
             
     
