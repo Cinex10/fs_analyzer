@@ -1,9 +1,9 @@
 from neo4j import GraphDatabase
 
 # Connexion à Neo4j
-uri = "bolt://localhost:7688"  # URI de votre instance Neo4j
+uri = "bolt://localhost:7687"  # URI de votre instance Neo4j
 username = "neo4j"  # Votre nom d'utilisateur
-password = "testpassword"  # Votre mot de passe
+password = "password"  # Votre mot de passe
 driver = GraphDatabase.driver(uri, auth=(username, password))
 
 # Fonction pour créer des nœuds et des relations
@@ -61,6 +61,31 @@ def create_node(Word) :
 def create_relation (name1 , name2 ) : 
     pass 
      
+def create_word_tag_relations(word_tag_map):
+    with driver.session() as session:
+        for word, relations in word_tag_map.items():
+            for relation, tag in relations:
+                # Crée un nœud Tag unique pour chaque relation (même si le tag a le même nom)
+                session.run(
+                    """
+                    CREATE (t:Tag {name: $tag})
+                    """,
+                    tag=tag
+                )
+                
+                # Récupère le dernier nœud créé pour l'associer au mot
+                session.run(
+                    """
+                    MATCH (w:Word {name: $word})
+                    MATCH (t:Tag {name: $tag}) 
+                    WHERE NOT (t)<-[:HAS_TAG]-(:Word) 
+                    CREATE (w)-[:HAS_TAG]->(t)
+                    """,
+                    word=word,
+                    tag=tag
+                )
+
 # Fonction pour fermer la connexion à Neo4j
 def close_connection():
     driver.close()
+

@@ -1,6 +1,6 @@
 import sys
 from preprocessing.tokenizer import Tokenizer
-from graph.graph_builder import create_graph,close_connection
+from graph.graph_builder import create_graph,close_connection,create_word_tag_relations
 from src.pos_tagger.pos_tagger import PosTagger
 from src.relation_extraction.extractor import RelationExtractor
 
@@ -17,6 +17,7 @@ class FSAnalyzer:
         print("Graph created successfully!")
         from_relation = self.relation_extractor.extract_from_relation(x)
         tagger_res = self.pos_tagger.tag(from_relation)
+        create_word_tag_relations(tagger_res)
         close_connection()
 
      
