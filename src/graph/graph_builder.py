@@ -64,26 +64,22 @@ def create_relation (name1 , name2 ) :
 def create_word_tag_relations(word_tag_map):
     with driver.session() as session:
         for word, relations in word_tag_map.items():
-            for relation, tag in relations:
-                # Crée un nœud Tag unique pour chaque relation (même si le tag a le même nom)
+            for relation in relations:
+                relation_type = relation['relation_type']
+                to_node_name = relation['to_node_name']
+                to_node_type = relation['to_node_type']
+
+                # Merge sur tout le modèle (Word, relation et nœud cible) pour éviter les doublons
                 session.run(
-                    """
-                    CREATE (t:Tag {name: $tag})
-                    """,
-                    tag=tag
-                )
-                
-                # Récupère le dernier nœud créé pour l'associer au mot
-                session.run(
-                    """
-                    MATCH (w:Word {name: $word})
-                    MATCH (t:Tag {name: $tag}) 
-                    WHERE NOT (t)<-[:HAS_TAG]-(:Word) 
-                    CREATE (w)-[:HAS_TAG]->(t)
+                    f"""
+                    MERGE (w:Word {{name: $word}})
+                    CREATE (n:{to_node_type} {{name: $to_node_name}})
+                    CREATE (w)-[:{relation_type}]->(n)
                     """,
                     word=word,
-                    tag=tag
+                    to_node_name=to_node_name
                 )
+
 
 # Fonction pour fermer la connexion à Neo4j
 def close_connection():
