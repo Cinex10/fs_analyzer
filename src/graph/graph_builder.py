@@ -11,46 +11,56 @@ def create_graph(words):
     with driver.session() as session:
         # Nettoie la base de données (facultatif)
         session.run("MATCH (n) DETACH DELETE n")
-        
-        session.run("CREATE (:Start {name: '_Start'})")
 
+        # Crée les nœuds Start et End
+        session.run("CREATE (:Start {name: '_Start'})")
         session.run("CREATE (:End {name: '_End'})")
 
+        # Liste pour stocker les identifiants des nœuds de mots
+        word_nodes = []
 
+        # Crée un nœud pour chaque mot (même mot = nouveau nœud)
+        for i, word in enumerate(words):
+            result = session.run(
+                """
+                CREATE (w:Word {name: $name, id: $id})
+                RETURN id(w) AS node_id
+                """,
+                name=word,
+                id=i  # Ajoute un ID unique basé sur l'index dans la phrase
+            )
+            word_nodes.append(result.single()["node_id"])
 
-        # Crée des nœuds pour chaque mot
-        for word in words:
-            session.run("CREATE (:Word {name: $name})", name=word)
-        
-        # Exemple de relations (crée des relations entre mots successifs)
-        for i in range(len(words) - 1):
-            
+        # Crée les relations successives (r_succ)
+        for i in range(len(word_nodes) - 1):
             session.run(
                 """
-                MATCH (a:Word {name: $name1}), (b:Word {name: $name2})
+                MATCH (a:Word), (b:Word)
+                WHERE id(a) = $id1 AND id(b) = $id2
                 CREATE (a)-[:r_succ]->(b)
                 """,
-                name1=words[i],
-                name2=words[i + 1]
+                id1=word_nodes[i],
+                id2=word_nodes[i + 1]
             )
 
-
-         # Lier le nœud "start" au premier mot
+        # Lier le premier mot au nœud Start
         session.run(
             """
-            MATCH (start:Start), (firstWord:Word {name: $firstWord})
+            MATCH (start:Start), (firstWord:Word)
+            WHERE id(firstWord) = $first_word_id
             CREATE (start)-[:STARTS]->(firstWord)
-            """, 
-            firstWord=words[0]
+            """,
+            first_word_id=word_nodes[0]
         )
-        
-        # Lier le nœud "end" au dernier mot
+
+        # Lier le dernier mot au nœud End
         session.run(
             """
-            MATCH (end:End), (lastWord:Word {name: $lastWord})
+            MATCH (end:End), (lastWord:Word)
+            WHERE id(lastWord) = $last_word_id
             CREATE (lastWord)-[:ENDS]->(end)
-            """, 
-            lastWord=words[-1]
+            """,
+            last_word_id=word_nodes[-1]
         )
     
 def create_node(Word) :
