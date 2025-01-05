@@ -2,7 +2,6 @@ import sys
 from preprocessing.tokenizer import Tokenizer
 from graph.graph_builder import create_graph,close_connection,create_word_tag_relations
 from one_to_one_relation_extractor.extractor import OneToOneRelationExtractor
-
 class FSAnalyzer:
     def __init__(self, text: str):
         self.text = text
@@ -25,5 +24,6 @@ def main():
     
     
 if __name__ == '__main__':
+    # use this example "frégate ancien coule"
     main()
 
