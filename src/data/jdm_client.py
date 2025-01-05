@@ -1,4 +1,5 @@
 import functools
+import pdb
 from typing import Dict
 import requests
 
@@ -38,7 +39,14 @@ class JdmApiClient:
         if res.status_code != 200:
             return {}
         res = res.json()
-        return res
+        nodes_mapping = {int(d['id']) : d for d in res['nodes']}
+        data = []
+        for relation in res['relations']:
+            data.append({
+                'node': nodes_mapping[int(relation['node2'])],
+                'relation': relation
+            })
+        return data
 
 
     

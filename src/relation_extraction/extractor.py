@@ -1,4 +1,4 @@
-from src.data.jdm_client import JdmApiClient
+from data.jdm_client import JdmApiClient
 
 
 class RelationExtractor:

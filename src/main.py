@@ -1,8 +1,8 @@
 import sys
 from preprocessing.tokenizer import Tokenizer
 from graph.graph_builder import create_graph,close_connection,create_word_tag_relations
-from src.pos_tagger.pos_tagger import PosTagger
-from src.relation_extraction.extractor import RelationExtractor
+from pos_tagger.pos_tagger import PosTagger
+from relation_extraction.extractor import RelationExtractor
 
 class FSAnalyzer:
     def __init__(self, text: str):
