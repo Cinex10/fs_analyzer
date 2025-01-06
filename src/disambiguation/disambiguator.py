@@ -1,4 +1,3 @@
-import pdb
 from data.disambiguator_data import DisambiguatorData
 
 
@@ -23,7 +22,6 @@ class Disambiguator:
         for i in range(len(words) - 1):
             word = words[i]
             next_word = words[i+1]
-            pdb.set_trace()
             relation = self.disambiguate(word, next_word)
             if relation:
                 res[word] = [relation]

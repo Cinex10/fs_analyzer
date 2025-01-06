@@ -2,11 +2,13 @@ import sys
 from preprocessing.tokenizer import Tokenizer
 from graph.graph_builder import create_graph,close_connection,create_word_tag_relations
 from one_to_one_relation_extractor.extractor import OneToOneRelationExtractor
+from disambiguation.disambiguator import Disambiguator
 class FSAnalyzer:
     def __init__(self, text: str):
         self.text = text
         self.tokenizer = Tokenizer()
         self.one_to_one_relation_extractor = OneToOneRelationExtractor()
+        self.disambiguator = Disambiguator()
         
     def analyse(self):
         x = self.tokenizer(self.text)
@@ -14,6 +16,8 @@ class FSAnalyzer:
         print("Graph created successfully!")
         tagger_res = self.one_to_one_relation_extractor.tag(x)
         create_word_tag_relations(tagger_res)
+        disambiguator_res = self.disambiguator.disambiguate_all(x)
+        create_word_tag_relations(disambiguator_res)
         close_connection()
 
      
