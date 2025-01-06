@@ -1,3 +1,4 @@
+import pdb
 from data.jdm_client import JdmApiClient
 from data.relation_types_mapper import RelationTypesMapper
 from data.node_types_mapper import NodeTypesMapper
@@ -21,15 +22,18 @@ class OneToOneRelationExtractor:
         
             for relation_data in relations:
                 if relation_data['relation']['type'] in self.allowed_relations:
-                        relation_data = {
+                        tagging_res[word] = tagging_res.get(word, []) + [{
                             'relation_type' : self.relation_types.get_word(relation_data['relation']['type']),
                             'to_node_name' : relation_data['node']['name'],
                             'to_node_type' : self.node_types.get_word(relation_data['node']['type']),
-                        }
-                        tagging_res[word] = tagging_res.get(word, []) + [relation_data]
-                compound_word = relation_data['node']['name']
-                fragments = compound_word.split()
-                if fragments > 1 and compound_word in sentence:
+                        }]
+                # pdb.set_trace()
+                try:
+                    compound_word = relation_data['node']['name']
+                    fragments = compound_word.split()
+                except:
+                     print(fragments)
+                if len(fragments) > 1 and compound_word in sentence:
                     compound_words_detection_res.append({
                         "compound_word": fragments
                     })
