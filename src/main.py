@@ -14,7 +14,7 @@ class FSAnalyzer:
         x = self.tokenizer(self.text)
         create_graph(x)
         print("Graph created successfully!")
-        tagger_res = self.one_to_one_relation_extractor.tag(x)
+        tagger_res, compound_words_res = self.one_to_one_relation_extractor.tag(x)
         create_word_tag_relations(tagger_res)
         disambiguator_res = self.disambiguator.disambiguate_all(x)
         create_word_tag_relations(disambiguator_res)

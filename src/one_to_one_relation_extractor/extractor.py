@@ -11,8 +11,10 @@ class OneToOneRelationExtractor:
         self.allowed_relations = [4, 19]
 
     def tag(self, words):
+        sentence = ' '.join(words)
         word_relation_map = {}
-        res = {}
+        tagging_res = {}
+        compound_words_detection_res = []
         for word in words:
             relations = self.client.get_from_relations(word)
             word_relation_map[word] = relations
@@ -24,6 +26,12 @@ class OneToOneRelationExtractor:
                             'to_node_name' : relation_data['node']['name'],
                             'to_node_type' : self.node_types.get_word(relation_data['node']['type']),
                         }
-                        res[word] = res.get(word, []) + [relation_data]
-        return res
+                        tagging_res[word] = tagging_res.get(word, []) + [relation_data]
+                compound_word = relation_data['node']['name']
+                fragments = compound_word.split()
+                if fragments > 1 and compound_word in sentence:
+                    compound_words_detection_res.append({
+                        "compound_word": fragments
+                    })
+        return tagging_res , compound_words_detection_res
     
