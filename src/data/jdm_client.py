@@ -43,7 +43,7 @@ class JdmApiClient:
         data = []
         for relation in res['relations']:
             data.append({
-                'node': nodes_mapping[int(relation['node2'])],
+                'node': nodes_mapping.get(int(relation['node2'])),
                 'relation': relation
             })
         return data
