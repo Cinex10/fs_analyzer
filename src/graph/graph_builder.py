@@ -120,7 +120,6 @@ def compound_words(compound_words_detection_res):
 
 
             record = result.single()
-            pdb.set_trace()
 
             if record:
                 prev_id = record["prev_id"]

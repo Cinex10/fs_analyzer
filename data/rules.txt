@@ -1,0 +1,11 @@
+MATCH (pos:n_pos)<-[r1:r_pos]-(w1:Word)-[:r_succ]->(w2:Word)-[:r_pos]->(:n_pos {name: 'Nom:'})
+WHERE pos.name <> "Det:"
+SET r1.w = -1
+#
+MATCH (pos:n_pos)<-[r1:r_pos]-(w1:Word)-[:r_succ]->(w2:Word)-[:r_pos]->(:n_pos {name: 'Ver:'})
+WHERE pos.name <> "Pro:"
+SET r1.w = -1
+#
+MATCH (w1:Word)-[:r_pos]->(:n_pos {name: 'Ver:'}), (w1)-[:r_succ]->(w2:Word)-[:r_succ]->(w3:Word)-[:r_pos]->(:n_pos {name: 'Nom:'}), (w2)-[r1:r_pos]->(pos:n_pos)
+WHERE pos.name <> "Pre:"
+SET r1.w = -1

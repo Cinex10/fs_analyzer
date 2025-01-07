@@ -5,11 +5,11 @@ from data.node_types_mapper import NodeTypesMapper
 
 
 class OneToOneRelationExtractor:
-    def __init__(self):
+    def __init__(self, allowed_relations = [4, 19]):
         self.client = JdmApiClient()
         self.relation_types = RelationTypesMapper()
         self.node_types = NodeTypesMapper()
-        self.allowed_relations = [4, 19]
+        self.allowed_relations = allowed_relations
 
     def tag(self, words):
         sentence = ' '.join(words)
@@ -21,7 +21,7 @@ class OneToOneRelationExtractor:
             word_relation_map[word] = relations
         
             for relation_data in relations:
-                if relation_data['relation']['type'] in self.allowed_relations:
+                if relation_data['relation']['type'] in self.allowed_relations and relation_data['relation']['w'] > 0 and relation_data['node']['name'].endswith(':') and len(relation_data['node']['name'].split(':')) == 2:
                         tagging_res[word] = tagging_res.get(word, []) + [{
                             'relation_type' : self.relation_types.get_word(relation_data['relation']['type']),
                             'to_node_name' : relation_data['node']['name'],
