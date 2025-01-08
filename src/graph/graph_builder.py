@@ -148,6 +148,17 @@ def compound_words(compound_words_detection_res):
                     next_id=next_id
                 )
 
+def apply_rules(rules):
+    with driver.session() as session:
+        for rule in rules:
+            rule = rule.strip()  # Enlève les espaces inutiles
+            if rule:
+                try:
+                    session.run(rule)  # Exécute la règle sur Neo4j
+                except Exception as e:
+                    print(f"Error applying rule: {rule}\n{e}")
+
+
 # Fonction pour fermer la connexion à Neo4j
 def close_connection():
     driver.close()
