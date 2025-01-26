@@ -88,6 +88,6 @@ async def on_message(message):
 # Run the bot (replace with your bot token)
 bot.run()
 load_dotenv()
-BOT_TOKEN = os.getenv('BOT_TOKEN')
+BOT_TOKEN_SECRET = os.getenv('BOT_TOKEN')
 
-bot.run(BOT_TOKEN)
+bot.run(BOT_TOKEN_SECRET)
