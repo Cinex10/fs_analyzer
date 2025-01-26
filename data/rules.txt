@@ -1,11 +1,16 @@
-MATCH (pos:n_pos)<-[r1:r_pos]-(w1:Word)-[:r_succ]->(w2:Word)-[:r_pos]->(:n_pos {name: 'Nom:'})
-WHERE pos.name <> "Det:"
-SET r1.w = -1
+MATCH (x:Word)-[x_pos_name:r_pos]->(:n_pos {name: 'Nom:'}), 
+      (x)-[:r_pos]->(:n_pos {name: 'Adj:'}), 
+      (y:Word)-[:r_pos]->(:n_pos {name: 'Nom:'}), 
+      (z:Word)-[:r_pos]->(:n_pos {name: 'Ver:'}), 
+      (x)-[:r_succ]->(y)-[:r_succ]->(z)
+SET x_pos_name.w = -1
 #
-MATCH (pos:n_pos)<-[r1:r_pos]-(w1:Word)-[:r_succ]->(w2:Word)-[:r_pos]->(:n_pos {name: 'Ver:'})
-WHERE pos.name <> "Pro:"
-SET r1.w = -1
+MATCH (x:Word)-[:r_pos]->(:n_pos {name: 'Ver:'}), 
+      (x)-[:r_lemma]->(y:Word)
+MERGE (y)-[:r_pos {w : 1}]->(:n_pos {name: 'Ver:'})
 #
-MATCH (w1:Word)-[:r_pos]->(:n_pos {name: 'Ver:'}), (w1)-[:r_succ]->(w2:Word)-[:r_succ]->(w3:Word)-[:r_pos]->(:n_pos {name: 'Nom:'}), (w2)-[r1:r_pos]->(pos:n_pos)
-WHERE pos.name <> "Pre:"
-SET r1.w = -1
+MATCH (x:Word)-[:r_pos]->(:n_pos {name: 'Det:'}),
+      (y:Word)-[:r_pos]->(:n_pos {name: 'Nom:'}),
+      (z:Word)-[:r_pos]->(:n_pos {name: 'Ver:'}),
+      (x)-[:r_succ]->(y)-[:r_succ]->(z),
+MERGE (z)-[:r_agent]->(y)-[:r_agent-1]->(z)
