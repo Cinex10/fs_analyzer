@@ -5,7 +5,7 @@ from data.node_types_mapper import NodeTypesMapper
 
 
 class OneToOneRelationExtractor:
-    def __init__(self, allowed_relations = [4, 19]):
+    def __init__(self, allowed_relations = [4, 19, 15, ]):
         self.client = JdmApiClient()
         self.relation_types = RelationTypesMapper()
         self.node_types = NodeTypesMapper()

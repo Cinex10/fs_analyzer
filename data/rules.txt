@@ -3,7 +3,14 @@ MATCH (x:Word)-[x_pos_name:r_pos]->(:n_pos {name: 'Nom:'}),
       (y:Word)-[:r_pos]->(:n_pos {name: 'Nom:'}), 
       (z:Word)-[:r_pos]->(:n_pos {name: 'Ver:'}), 
       (x)-[:r_succ]->(y)-[:r_succ]->(z)
-SET x_pos_name.w = -1
+      SET x_pos_name.w = -1
+#
+MATCH (x:Word)-[x_pos_name:r_pos]->(:n_pos {name: 'Adv:'}), 
+      (x)-[:r_pos]->(:n_pos {name: 'Adj:'}), 
+      (y:Word)-[:r_pos]->(:n_pos {name: 'Nom:'}), 
+      (z:Word)-[:r_pos]->(:n_pos {name: 'Ver:'}), 
+      (x)-[:r_succ]->(y)-[:r_succ]->(z)
+      SET x_pos_name.w = -1
 #
 MATCH (x:Word)-[:r_pos]->(:n_pos {name: 'Ver:'}), 
       (x)-[:r_lemma]->(y:Word)
@@ -12,5 +19,101 @@ MERGE (y)-[:r_pos {w : 1}]->(:n_pos {name: 'Ver:'})
 MATCH (x:Word)-[:r_pos]->(:n_pos {name: 'Det:'}),
       (y:Word)-[:r_pos]->(:n_pos {name: 'Nom:'}),
       (z:Word)-[:r_pos]->(:n_pos {name: 'Ver:'}),
-      (x)-[:r_succ]->(y)-[:r_succ]->(z),
-MERGE (z)-[:r_agent]->(y)-[:r_agent-1]->(z)
+      (x)-[:r_succ]->(y)-[:r_succ]->(z)
+MERGE (z)-[:r_agent]->(y)
+MERGE (y)-[:r_agent_1]->(z)
+#
+MATCH (x:Word)-[:r_agent_1]->(y:Word),
+      (y)-[:r_lemma]->(z:Word)
+MERGE (x)-[:r_agent_1]->(z)
+#
+MATCH (x:Word)-[:r_pos]->(:n_pos {name: 'Det:'}),
+      (y:Word)-[:r_pos]->(:n_pos {name: 'Nom:'}),
+      (x)-[:r_pos]->(:n_pos {gender: 'Fem'}),
+      (y)-[:r_pos]->(:n_pos {gender: 'Fem'}),
+      (x)-[:r_succ]->(y)
+SET x.r_qui_pro_fem = -1
+#
+MATCH 
+    (x:Word)-[:r_pos]->(:n_pos {name: 'Pro:'}),
+    (y:Word)-[:r_pos]->(:n_pos {name: 'Nom:'}),
+    (x)-[:r_pos]->(:n_pos {gender: 'Mas'}),
+    (y)-[:r_pos]->(:n_pos {gender: 'Mas'})
+WHERE 
+    NOT (x)-[:r_pos]->(:n_pos {gender: 'Fem'})
+    AND NOT (y)-[:r_pos]->(:n_pos {gender: 'Fem'})
+    AND NOT (x)-[:r_succ]->(y)
+MERGE 
+    (x)-[:r_qui_pro_mas]->(y)
+#
+MATCH 
+    (x:Word)-[:r_pos]->(:n_pos {name: 'Det:'}),
+    (y:Word)-[:r_pos]->(:n_pos {name: 'Nom:'}),
+    (z:Word)-[:r_pos]->(:n_pos {name: 'Adj:'}),
+    (x)-[:r_succ]->(y),
+    (y)-[:r_succ]->(z)
+WHERE 
+    NOT (:GN)-[:GN_part_of]->(x)
+    AND NOT (:GN)-[:GN_part_of]->(y)
+    AND NOT (:GN)-[:GN_part_of]->(z)
+    AND NOT (:GN)-[:GN_det]->(x)
+    AND NOT (:GN)-[:GN_sujet]->(y)
+MERGE (gn:GN {det: id(x), nom: id(y)}) MERGE (gn)-[:GN_part_of]->(x) MERGE (gn)-[:GN_part_of]->(y) MERGE (gn)-[:GN_part_of]->(z) MERGE (gn)-[:GN_det]->(x) MERGE (gn)-[:GN_sujet]->(y)
+#
+MATCH 
+    (x:Word)-[:r_pos]->(:n_pos {name: 'Det:'}),
+    (y:Word)-[:r_pos]->(:n_pos {name: 'Adj:'}),
+    (z:Word)-[:r_pos]->(:n_pos {name: 'Nom:'}),
+    (x)-[:r_succ]->(y),
+    (y)-[:r_succ]->(z)
+WHERE 
+    NOT (:GN)-[:GN_part_of]->(x)
+    AND NOT (:GN)-[:GN_part_of]->(y)
+    AND NOT (:GN)-[:GN_part_of]->(z)
+    AND NOT (:GN)-[:GN_det]->(x)
+    AND NOT (:GN)-[:GN_sujet]->(z)
+MERGE (gn:GN {det: id(x), nom: id(z)}) MERGE (gn)-[:GN_part_of]->(x) MERGE (gn)-[:GN_part_of]->(y) MERGE (gn)-[:GN_part_of]->(z) MERGE (gn)-[:GN_det]->(x) MERGE (gn)-[:GN_sujet]->(z)
+#
+MATCH 
+    (x:Word)-[:r_pos]->(:n_pos {name: 'Pro:'}),
+    (y:Word)-[:r_pos]->(:n_pos {name: 'Nom:'}),
+    (x)-[:r_pos]->(:n_pos {gender: 'Fem'}),
+    (y)-[:r_pos]->(:n_pos {gender: 'Fem'})
+WHERE 
+    NOT (x)-[:r_pos]->(:n_pos {gender: 'Mas'})
+    AND NOT (y)-[:r_pos]->(:n_pos {gender: 'Mas'})
+    AND NOT (x)-[:r_succ]->(y)
+MERGE 
+    (x)-[:r_qui_pro_fem]->(y)
+# une grande pizza rouge
+MATCH 
+    (x:Word)-[:r_pos]->(:n_pos {name: 'Det:'}),
+    (y:Word)-[:r_pos]->(:n_pos {name: 'Adj:'}),
+    (z:Word)-[:r_pos]->(:n_pos {name: 'Nom:'}),
+    (t:Word)-[:r_pos]->(:n_pos {name: 'Adj:'}),
+    (x)-[:r_succ]->(y),
+    (y)-[:r_succ]->(z),
+    (z)-[:r_succ]->(t)
+WHERE 
+    NOT (:GN)-[:GN_part_of]->(x)
+    AND NOT (:GN)-[:GN_part_of]->(y)
+    AND NOT (:GN)-[:GN_part_of]->(z)
+    AND NOT (:GN)-[:GN_part_of]->(t)
+MERGE (gn:GN {det: id(x), nom: id(z)}) MERGE (gn)-[:GN_part_of]->(x) MERGE (gn)-[:GN_part_of]->(y) MERGE (gn)-[:GN_part_of]->(z) MERGE (gn)-[:GN_part_of]->(t) MERGE (gn)-[:GN_det]->(x) MERGE (gn)-[:GN_sujet]->(z)
+#
+MATCH 
+    (x:Word)-[:r_pos]->(:n_pos {name: 'Det:'}),
+    (y:Word)-[:r_pos]->(:n_pos {name: 'Nom:'}),
+    (x)-[:r_succ]->(y)
+WHERE 
+    NOT (:GN)-[:GN_part_of]->(x)
+    AND NOT (:GN)-[:GN_part_of]->(y)
+MERGE (gn:GN {det: id(x), nom: id(y)}) MERGE (gn)-[:GN_part_of]->(x) MERGE (gn)-[:GN_part_of]->(y) MERGE (gn)-[:GN_det]->(x) MERGE (gn)-[:GN_sujet]->(y)
+# Groupe verbal
+MATCH (z:Word)-[:r_pos]->(:n_pos {name: 'Det:'}),
+      (y:Word)-[:r_pos]->(:n_pos {name: 'Ver:'}),
+      (g1:GN)-[:GN_part_of]->(x:Word),
+      (g2:GN)-[:GN_part_of]->(z),
+      (x)-[:r_succ]->(y),
+      (y)-[:r_succ]->(z)
+MERGE (gv:GV) MERGE (gv)-[:GV_agent]->(g1) MERGE (gv)-[:GV_patient]->(g2) MERGE (gv)-[:GV_ver]->(y)

@@ -10,6 +10,8 @@ import io
 import os
 from dotenv import load_dotenv
 
+from main import FSAnalyzer
+
 class Neo4jGraph:
     def __init__(self, uri, user, password):
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
@@ -21,14 +23,14 @@ class Neo4jGraph:
         with self.driver.session() as session:
             # Query to get nodes and relationships
             result = session.run("""
-                MATCH (n) RETURN n;
+                MATCH (n)-[r]->(m) RETURN n, r, m
             """)
             
             G = nx.DiGraph()
             
             for record in result:
-                source = record["n"]["name"]  # Adjust property as needed
-                target = record["m"]["name"]
+                source = record["n"].get("name", "GN")  # Adjust property as needed
+                target = record["m"].get("name", "GN")
                 G.add_edge(source, target)
             
             return G
@@ -46,6 +48,36 @@ async def on_ready():
 async def hello(ctx):
     """Responds with a greeting when user types !hello"""
     await ctx.send(f'Hello {ctx.author.name}!')
+    
+@bot.command(name='analyze')
+async def graph_query(ctx, text: str):
+    anaylzer = FSAnalyzer(text)
+    anaylzer.analyse()
+    graph = Neo4jGraph("bolt://localhost:7687", "neo4j", "password")
+    # Get NetworkX graph
+    G = graph.get_graph()
+    
+    # Create visualization
+    plt.figure(figsize=(10, 8))
+    pos = nx.spring_layout(G)  # Positions for all nodes
+    
+    # Draw nodes with different colors based on their labels
+    node_colors = ['lightblue' if 'Nom' in node else 'lightgreen' for node in G.nodes()]
+    nx.draw(G, pos, with_labels=True, node_color=node_colors, 
+            node_size=1500, arrowsize=20)
+    
+    # Save to buffer
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    
+    # Send image to Discord
+    await ctx.channel.send(file=discord.File(buffer, 'graph.png'))
+    
+    plt.close()
+    graph.close()
+
+    
 
 @bot.command(name='ping')
 async def ping(ctx):
@@ -65,13 +97,16 @@ async def on_message(message):
     # Respond to specific keywords
     if 'help' in message.content.lower():
         graph = Neo4jGraph("bolt://localhost:7687", "neo4j", "password")
-        print('sdhj')
         # Get NetworkX graph
         G = graph.get_graph()
         
         # Create visualization
         plt.figure(figsize=(10, 8))
-        nx.draw(G, with_labels=True, node_color='lightblue', 
+        pos = nx.spring_layout(G)  # Positions for all nodes
+        
+        # Draw nodes with different colors based on their labels
+        node_colors = ['lightblue' if 'Nom' in node else 'lightgreen' for node in G.nodes()]
+        nx.draw(G, pos, with_labels=True, node_color=node_colors, 
                 node_size=1500, arrowsize=20)
         
         # Save to buffer
@@ -86,7 +121,6 @@ async def on_message(message):
         graph.close()
 
 # Run the bot (replace with your bot token)
-bot.run()
 load_dotenv()
 BOT_TOKEN_SECRET = os.getenv('BOT_TOKEN')
 
