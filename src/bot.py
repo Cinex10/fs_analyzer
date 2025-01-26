@@ -7,6 +7,8 @@ from discord.ext import commands
 import networkx as nx
 import matplotlib.pyplot as plt
 import io
+import os
+from dotenv import load_dotenv
 
 class Neo4jGraph:
     def __init__(self, uri, user, password):
@@ -84,4 +86,8 @@ async def on_message(message):
         graph.close()
 
 # Run the bot (replace with your bot token)
-bot.run('MTMzMzA0NzA0MjIyNTg2ODg1Mg.GhIAHQ.GeWReQvRgLmiNon4BdenK-Z-AsqCbN8_HrPLLk')
+bot.run()
+load_dotenv()
+BOT_TOKEN = os.getenv('BOT_TOKEN')
+
+bot.run(BOT_TOKEN)
