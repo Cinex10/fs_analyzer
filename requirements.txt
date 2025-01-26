@@ -1,2 +1,5 @@
 neo4j
 requests
+networkx
+matplotlib
+python-dotenv

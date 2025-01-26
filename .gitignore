@@ -2,3 +2,5 @@ myenv
 **/__pycache__
 data/words.txt
 **/.pytest_cache
+**/.env
+venv
