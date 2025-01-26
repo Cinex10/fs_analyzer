@@ -1,7 +1,7 @@
 import pdb
 import sys
 from preprocessing.tokenizer import Tokenizer
-from graph.graph_builder import create_graph,close_connection,create_word_tag_relations,compound_words
+from graph.graph_builder import apply_rules, create_graph,close_connection,create_word_tag_relations,compound_words
 from one_to_one_relation_extractor.extractor import OneToOneRelationExtractor
 from disambiguation.disambiguator import Disambiguator
 from rule_engine.rule_engine import RuleEngine
@@ -24,7 +24,7 @@ class FSAnalyzer:
         disambiguator_res = self.disambiguator.disambiguate_all(x)
         create_word_tag_relations(disambiguator_res)
         rules = self.rule_engine.get_rules()
-        # apply rules
+        apply_rules(rules)
         close_connection()
 
      
