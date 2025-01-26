@@ -76,7 +76,7 @@ def create_word_tag_relations(word_tag_map):
                     f"""
                     MERGE (w:Word {{name: $word}})
                     CREATE (n:{to_node_type} {{name: $to_node_name}})
-                    CREATE (w)-[:{relation_type}]->(n)
+                    CREATE (w)-[:{relation_type} {{w: 1}}]->(n)
                     """,
                     word=word,
                     to_node_name=to_node_name
@@ -158,8 +158,39 @@ def apply_rules(rules):
                 except Exception as e:
                     print(f"Error applying rule: {rule}\n{e}")
 
+                    
 
+def resolve_anaphora():
+       with driver.session() as session:
+        session.run("""
+        MATCH (pronoun:Word)-[:r_pos {w: 1}]->(:n_pos {name: 'Pro:'})
+        WHERE pronoun.name IN ['il', 'elle', 'ils', 'elles']
+        MATCH (nom:Word)-[:r_pos {w: 1}]->(:n_pos {name: 'Nom:'})
+        MATCH (nom)-[:r_succ]->(verb:Word)-[:r_pos {w: 1}]->(:n_pos {name: 'Ver:'})
+        MATCH path = (nom)-[:r_succ*]->(pronoun)
+        WHERE ALL(node IN nodes(path)[1..-1] WHERE NOT (node)-[:r_pos]->(:n_pos {name: 'Nom:'}))
+        WITH pronoun, nom, length(path) AS distance
+        ORDER BY distance ASC
+        LIMIT 1
+        MERGE (pronoun)-[:r_reference {type: 'semantic'}]->(nom)
+        """)
 # Fonction pour fermer la connexion à Neo4j
+
+def resolve_determiner_anaphora():
+    
+    with driver.session() as session:
+        session.run("""
+        MATCH (det:Word)-[:r_pos {w: 1}]->(:n_pos {name: 'Det:'})
+        WHERE det.name IN ['le', 'la', 'les']
+        MATCH (nom:Word)-[:r_pos {w: 1}]->(:n_pos {name: 'Nom:'})
+        MATCH (det)-[:r_succ]->(verb:Word)-[:r_pos {w: 1}]->(:n_pos {name: 'Ver:'})
+        MATCH path = (nom)-[:r_succ*]->(det)
+        WHERE ALL(node IN nodes(path)[1..-1] WHERE NOT (node)-[:r_pos]->(:n_pos {name: 'Nom:'}))
+        WITH det, nom, length(path) AS distance
+        ORDER BY distance ASC
+        LIMIT 1
+        MERGE (det)-[:r_reference {type: 'semantic'}]->(nom)
+        """)
 def close_connection():
     driver.close()
 
